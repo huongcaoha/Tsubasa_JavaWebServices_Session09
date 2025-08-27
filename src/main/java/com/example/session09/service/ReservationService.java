@@ -37,8 +37,14 @@ public class ReservationService {
             Reservation newReservation = reservationRepository.save(reservation);
             room.setReservation(newReservation);
             roomService.save(room);
-            ReservationResponse reservationResponse = ReservationResponse;
-            return new ResponseEntity<>(newReservation, HttpStatus.CREATED);
+            ReservationResponse reservationResponse = ReservationResponse
+                    .builder()
+                    .customerName(newReservation.getCustomer().getName())
+                    .roomName(newReservation.getRoom().getRoomName())
+                    .status(newReservation.getStatus())
+                    .id(newReservation.getId())
+                    .build();
+            return new ResponseEntity<>(reservationResponse, HttpStatus.CREATED);
         }catch (Exception e) {
             e.printStackTrace();
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR) ;
@@ -46,26 +52,31 @@ public class ReservationService {
     }
 
     public Reservation findById(long id) {
-        return reservationRepository.findById(id).orElseThrow(() -> new NoSuchElementException("Not found reservation with id: " + id));
+        return reservationRepository.findById(id).orElse(null);
     }
 
-    public boolean cancelReservation(Long id) {
+    public ResponseEntity<String> cancelReservation(Long id) {
         Reservation reservation = findById(id);
 
-        if (reservation != null && reservation.getStatus().equals(Status.PENDING)) {
-            reservation.setStatus(Status.CANCELLED);
-            try {
-                reservationRepository.save(reservation);
-                Room room = reservation.getRoom();
-                room.setReservation(null);
-                roomService.save(room); // Trả lại phòng
-                return true;
-            }catch (Exception e) {
-                e.printStackTrace();
-                return false;
+        if (reservation != null ) {
+            if (reservation.getStatus().equals(Status.PENDING)){
+                reservation.setStatus(Status.CANCELLED);
+                try {
+                    reservationRepository.save(reservation);
+                    Room room = reservation.getRoom();
+                    room.setReservation(null);
+                    roomService.save(room); // Trả lại phòng
+                    return new ResponseEntity<>("Reservation cancelled", HttpStatus.OK);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR) ;
+                }
+            }else {
+                return new ResponseEntity<>("Can not cancel reservation when status is cancel or confirm !", HttpStatus.BAD_REQUEST) ;
             }
+
         }else {
-            return false;
+            return new ResponseEntity<>("Reservation not found !", HttpStatus.NOT_FOUND);
         }
     }
 
@@ -73,19 +84,28 @@ public class ReservationService {
         return reservationRepository.findAll(pageable);
     }
 
-    public boolean confirmReservation(Long id) {
+    public void save(Reservation reservation) {
+        reservationRepository.save(reservation);
+    }
+
+    public ResponseEntity<String> confirmReservation(Long id) {
         Reservation reservation = findById(id);
         if (reservation != null){
-            reservation.setStatus(Status.CONFIRMED);
-            try {
-                reservationRepository.save(reservation);
-                return true ;
-            }catch (Exception e) {
-                e.printStackTrace();
-                return false;
+            if(reservation.getStatus().equals(Status.PENDING)){
+                reservation.setStatus(Status.CONFIRMED);
+                try {
+                    reservationRepository.save(reservation);
+                    return new ResponseEntity<>("Confirm reservation successfully !", HttpStatus.OK);
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR) ;
+                }
+            }else {
+                return new ResponseEntity<>("Can not confirm reservation when status is cancel or confirm !", HttpStatus.BAD_REQUEST) ;
             }
+
         }else {
-            return false;
+            return new ResponseEntity<>("Reservation not found !", HttpStatus.NOT_FOUND);
         }
 
     }

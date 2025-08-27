@@ -25,13 +25,15 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> {
+                    auth.requestMatchers("/orderServices/edit/**").hasRole("ADMIN");
                     auth.requestMatchers("/auth/**").permitAll();
                     auth.requestMatchers("/admin/**").hasRole("ADMIN");
                     auth.requestMatchers("/user/**").hasRole("USER");
                     auth.requestMatchers("/invoices/history").hasRole("USER");
                     auth.requestMatchers("/orderServices/order").hasRole("USER");
+
                     auth.requestMatchers("/reservations/book").hasRole("USER");
-                    auth.requestMatchers("/reservations/cancel/").hasAnyRole("USER", "ADMIN");
+                    auth.requestMatchers("/reservations/cancel/**").hasAnyRole("USER", "ADMIN");
                     auth.anyRequest().hasRole("ADMIN");
                 })
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -1,5 +1,6 @@
 package com.example.session09.service;
 
+import com.example.session09.model.constant.Status;
 import com.example.session09.model.entity.Invoice;
 import com.example.session09.model.entity.OrderServices;
 import com.example.session09.model.entity.Reservation;
@@ -25,7 +26,7 @@ public class InvoiceService {
     public Invoice payInvoice(Long reservationId) {
         // Tính toán tổng tiền dựa trên dịch vụ và phòng đã đặt
         Reservation reservation = reservationService.findById(reservationId);
-        List<OrderServices> orderServices = orderServicesService.getAllServicesByReservationId(reservationId);
+        List<OrderServices> orderServices = orderServicesService.findAllByReservationId(reservationId);
         double totalPriceRoom = reservation.getRoom().getPrice();
         double totalPriceOrderService = orderServices.stream().map(ods -> ods.getRoomServices().getPrice() * ods.getQuantity())
                 .reduce(0.0, Double::sum);
@@ -41,6 +42,9 @@ public class InvoiceService {
             Room room = reservation.getRoom();
             room.setReservation(null);
             roomService.save(room);
+
+            reservation.setStatus(Status.CHECKOUT);
+            reservationService.save(reservation);
             return newInvoice;
         } catch (Exception e) {
             e.printStackTrace();

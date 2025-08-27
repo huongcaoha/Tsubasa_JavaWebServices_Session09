@@ -31,21 +31,11 @@ public class ReservationController {
 
     @PutMapping("/cancel/{id}")
     public ResponseEntity<String> cancelReservation(@PathVariable long id) {
-        boolean cancel = reservationService.cancelReservation(id);
-        if (cancel) {
-            return new ResponseEntity<>("cancel reservation successfully !", HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("cancel reservation failed", HttpStatus.BAD_REQUEST);
-        }
+       return reservationService.cancelReservation(id);
     }
 
     @PutMapping("/confirm/{id}")
     public ResponseEntity<String> confirmReservation(@PathVariable long id) {
-        boolean confirm = reservationService.confirmReservation(id);
-        if (confirm) {
-            return new ResponseEntity<>("confirm reservation successfully !", HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("confirm reservation failed", HttpStatus.BAD_REQUEST);
-        }
+      return reservationService.confirmReservation(id);
     }
 }

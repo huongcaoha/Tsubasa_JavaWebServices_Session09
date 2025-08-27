@@ -17,27 +17,18 @@ public class OrderServicesController {
     private OrderServicesService orderServicesService;
 
     @GetMapping("/{reservationId}")
-    public ResponseEntity<List<OrderServices>> getAllServicesByReservationId(@PathVariable Long reservationId) {
-        return new ResponseEntity<>(orderServicesService.getAllServicesByReservationId(reservationId), HttpStatus.OK);
+    public ResponseEntity<?> getAllServicesByReservationId(@PathVariable Long reservationId) {
+       return orderServicesService.getAllServicesByReservationId(reservationId);
     }
 
     @PostMapping("/order")
     public ResponseEntity<?> addOrderService(@RequestBody OrderServicesDTO orderServicesDTO) {
-        OrderServices orderServices = orderServicesService.addOrderService(orderServicesDTO);
-        if (orderServices != null) {
-            return new ResponseEntity<>(orderServices, HttpStatus.CREATED);
-        }else {
-            return new ResponseEntity<>("add order service failed !",HttpStatus.BAD_REQUEST);
-        }
+        return orderServicesService.addOrderService(orderServicesDTO);
     }
 
     @PutMapping("/edit/{id}")
     public ResponseEntity<?> editOrderService(@PathVariable Long id, @RequestBody OrderServicesDTO orderServicesDTO) {
-        OrderServices updateOrderServices = orderServicesService.editServiceOrder(id, orderServicesDTO);
-        if (updateOrderServices != null) {
-            return new ResponseEntity<>(updateOrderServices, HttpStatus.OK);
-        }else {
-            return new ResponseEntity<>("edit order service failed !",HttpStatus.BAD_REQUEST);
-        }
+        ResponseEntity<?> response = orderServicesService.editServiceOrder(id, orderServicesDTO);
+        return response ;
     }
 }
